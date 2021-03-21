@@ -1,0 +1,2 @@
+# PandaBot
+A discord bot
