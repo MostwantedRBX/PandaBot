@@ -39,8 +39,10 @@ def get_points(userid):
 def change_points(userid,value,way):
     with open("storage.json") as f:
         data = json.load(f)
+        print('loading data')
     for user in data['users']:
         if user['id'] == userid:
+            print('user found')
             if way.lower() == "add":
                 print("added")
                 user['points'] = user['points'] + value

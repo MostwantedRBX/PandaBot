@@ -8,10 +8,11 @@ from dotenv import load_dotenv
 #custom imports
 import bot_messages
 import bot_db as db
+from plugins import gamble
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-bot = commands.Bot(command_prefix='!')
+bot = commands.Bot(command_prefix='p!')
 
 @bot.event
 async def on_ready():
@@ -45,6 +46,7 @@ async def pokemon(ctx):
     print("pokemon")
     response = random.choice(bot_messages.pokemon)
     await ctx.send(response)
+# Point Gambling
 
 @bot.command(name="creategambler",help="Creates a gambling profile for you to gamble fake money! Yay!")
 async def create_gam(ctx):
@@ -55,13 +57,29 @@ async def create_gam(ctx):
 async def get_points(ctx):
     await ctx.send(f'You have: {db.get_points(ctx.message.author.id)}')
 
+@bot.command(name="gamble")
+async def game(ctx, game, amount:int, bet):
+    print(game, amount, bet)
+    user_points = db.get_points(int(ctx.message.author.id))
+    if user_points < amount:
+        await ctx.send(f'You bet more than you have! You currently have {user_points}, you bet {amount}.')
+    elif game == "highlow" and db.get_points(int(ctx.message.author.id)) >= amount:
+        result,total,d1,d2 = gamble.hi_low()
+        await ctx.send(f'The result was {result}, total face value of dice was {total}, and dice faces were, {d1},{d2}')
+        if result == bet.lower():
+            print("passed")
+            await db.change_points(int(ctx.message.author.id),amount,"add")
+        else:
+            print("failed")
+            await db.change_points(int(ctx.message.author.id),amount,"sub")
+
 # admin commands:
 @bot.command(name="givemepoints")
 @commands.has_role("Admin")
-async def give_me_points(ctx,a): # this isn't working? But if I call it in the file outside of a function it does. . . 
-    userid=ctx.message.author.id
+async def give_me_points(ctx,a:int):
+    userid=int(ctx.message.author.id)
     db.change_points(userid,a,"add")
-    ctx.send(f'Added {a} to you banking account, {ctx.message.author.name}.')
+    await ctx.send(f'Added {a} to your banking account, {ctx.message.author.name}.')
 
 @bot.command(name="createchannel")
 @commands.has_role("Admin")
@@ -83,6 +101,5 @@ async def on_error(event, *args, **kwargs):
     with open("err.log", "a") as f:
         if event == "on_message":
             f.write(f'Unhandled error: {args[0]}\n')
-
 
 bot.run(TOKEN)
