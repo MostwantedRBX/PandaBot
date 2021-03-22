@@ -8,10 +8,11 @@ from dotenv import load_dotenv
 #custom imports
 import bot_messages
 import bot_command_functions as bcf
+import bot_db as db
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-bot = commands.Bot(command_prefix='!') 
+bot = commands.Bot(command_prefix='!')
 
 @bot.event
 async def on_ready():
@@ -46,7 +47,23 @@ async def pokemon(ctx):
     response = random.choice(bot_messages.pokemon)
     await ctx.send(response)
 
+@bot.command(name="creategambler",help="Creates a gambling profile for you to gamble fake money! Yay!")
+async def create_gam(ctx):
+    db.new_user(ctx.message.author.name,ctx.message.author.id)
+    await ctx.send("User Created, start gambling! You get 100 to start. :)")
+
+@bot.command(name="getpoints",help="I'll let you know how many points you have")
+async def get_points(ctx):
+    await ctx.send(f'You have: {db.get_points(ctx.message.author.id)}')
+
 # admin commands:
+@bot.command(name="givemepoints")
+@commands.has_role("Admin")
+async def give_me_points(ctx,a): # this isn't working? But if I call it in the file outside of a function it does. . . 
+    userid=ctx.message.author.id
+    db.change_points(userid,a,"add")
+    ctx.send(f'Added {a} to you banking account, {ctx.message.author.name}.')
+
 @bot.command(name="createchannel")
 @commands.has_role("Admin")
 async def create_channel(ctx,channel_name):
@@ -67,5 +84,6 @@ async def on_error(event, *args, **kwargs):
     with open("err.log", "a") as f:
         if event == "on_message":
             f.write(f'Unhandled error: {args[0]}\n')
+
 
 bot.run(TOKEN)
