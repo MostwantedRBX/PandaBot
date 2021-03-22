@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 
 #custom imports
 import bot_messages
-import bot_command_functions as bcf
 import bot_db as db
 
 load_dotenv()
