@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import bot_messages
 import bot_db as db
 from plugins import gamble
+from plugins import lotto
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")

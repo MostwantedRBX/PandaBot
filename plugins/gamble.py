@@ -12,3 +12,4 @@ def odds_evens():
     if die % 2 == 0:
         return "even",die
     return "odd",die
+
