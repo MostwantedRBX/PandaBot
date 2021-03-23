@@ -46,12 +46,15 @@ async def pokemon(ctx):
     print("pokemon")
     response = random.choice(bot_messages.pokemon)
     await ctx.send(response)
-# Point Gambling
 
+# Point Gambling
 @bot.command(name="creategambler",help="Creates a gambling profile for you to gamble fake money! Yay!")
 async def create_gam(ctx):
-    db.new_user(ctx.message.author.name,ctx.message.author.id)
-    await ctx.send("User Created, start gambling! You get 100 to start. :)")
+    status = db.new_user(ctx.message.author.name,ctx.message.author.id)
+    if status == True:
+        await ctx.send("User Created, start gambling! You get 100 to start. :)")
+    else:
+        await ctx.send("You already have a gambling profile!")
 
 @bot.command(name="getpoints",help="I'll let you know how many points you have")
 async def get_points(ctx):
@@ -72,6 +75,14 @@ async def game(ctx, game, amount:int, bet):
         else:
             print("failed")
             await db.change_points(int(ctx.message.author.id),amount,"sub")
+    elif game =="evensodds" and db.get_points(int(ctx.message.author.id)) >= amount:
+        result,total = gamble.odds_evens()
+        if result == bet.lower():
+            db.change_points(int(ctx.message.author.id),amount,"add")
+            await ctx.send(f'You guessed right! The dice face was {total}, it was {result}!')
+        else:
+            db.change_points(int(ctx.message.author.id),amount,"sub")
+            await ctx.send(f'You guessed wrong! The dice face was {total}, it was {result}!')
 
 # admin commands:
 @bot.command(name="givemepoints")
@@ -88,7 +99,6 @@ async def create_channel(ctx,channel_name):
     if not discord.utils.get(guild.channels, name=channel_name):
         print(f'Creating Channel: {channel_name}')
         await guild.create_text_channel(channel_name)
-
 
 # error handling:
 @bot.event

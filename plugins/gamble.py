@@ -6,3 +6,9 @@ def hi_low():
     if (die1 + die2) < 7:
         return "low",die1+die2,die1,die2
     return "high",die1+die2,die1,die2
+
+def odds_evens():
+    die = random.choice(range(1,6))
+    if die % 2 == 0:
+        return "even",die
+    return "odd",die

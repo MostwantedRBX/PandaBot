@@ -17,17 +17,27 @@ def create_user():
         temp.append(template_user)
         write_json(data)
 
-
-def new_user(name,userid):
-    create_user()
+def check_for_user(userid):
     with open("storage.json") as f:
         data = json.load(f)
-    for user in data['users']:
-        if user['name'] == "NameHere":
-            user['name'] = name
-        if user['id'] == 1234:
-            user['id'] = userid
-    write_json(data)
+        for user in data['users']:
+            if user['id'] == userid:
+                print('user found')
+                return True
+        return False
+
+def new_user(name,userid):
+    if check_for_user(userid) == False:
+        create_user()
+        with open("storage.json") as f:
+            data = json.load(f)
+        for user in data['users']:
+            if user['name'] == "NameHere":
+                user['name'] = name
+            if user['id'] == 1234:
+                user['id'] = userid
+                write_json(data)
+                return True   
 
 def get_points(userid):
     with open("storage.json") as f:
@@ -52,9 +62,4 @@ def change_points(userid,value,way):
             break
     write_json(data)
     return True
-
-    # for user in data["users"]:
-    #     print(user['name'])
-    #     if user['name'].lower() == "admin":
-    #         user['points'] = user['points'] + 10
 
