@@ -2,6 +2,8 @@
 import os
 import random
 import discord
+import youtube_dl
+import asyncio
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -20,9 +22,18 @@ async def on_ready():
     print("ready!")
 
 @bot.event
+async def on_message(message):
+    channel = message.channel
+    if not message.author.bot:
+        if 'eyes' in message.content.lower():
+            print(message.content)
+            await channel.send(':eyes:')
+    await bot.process_commands(message)
+
+@bot.event
 async def on_member_join(member):
-    await member.create_dm()
-    await member.dm_channel.send(
+    chan = await member.create_dm()
+    await chan.send(
         f'Welcome to the server {member.name}, feel free to munch on bamboo while you await others. :bamboo:'
     )
     print("Panda Bot sent a user a DM")
@@ -85,6 +96,23 @@ async def game(ctx, game, amount:int, bet):
             db.change_points(int(ctx.message.author.id),amount,"sub")
             await ctx.send(f'You guessed wrong! The dice face was {total}, it was {result}!')
 
+# Audio client commands
+
+@bot.command(name="join")
+async def join(ctx):
+    if ctx.author.voice:
+        voiceChannel = ctx.message.author.voice.channel
+        print(voiceChannel)
+        voice = discord.utils.get(bot.voice_clients,guild=ctx.guild)
+        await voiceChannel.connect()
+        return
+    await ctx.send(f'You are not in a voice channel, {ctx.author.name}. I do not know you well enough to go to your house, yet... :eyes:')
+    
+
+@bot.command(name="leave")
+async def leave(ctx):
+    await ctx.voice_client.disconnect()
+
 # admin commands:
 @bot.command(name="givemepoints")
 @commands.has_role("Admin")
@@ -107,10 +135,10 @@ async def on_command_error(ctx,error):
     if isinstance(error,commands.errors.CheckFailure):
         await ctx.send("You don't have permission to change the bamboo forest!")
 
-@bot.event
-async def on_error(event, *args, **kwargs):
-    with open("err.log", "a") as f:
-        if event == "on_message":
-            f.write(f'Unhandled error: {args[0]}\n')
+# @bot.event
+# async def on_error(event, *args, **kwargs):
+#     with open("err.log", "a") as f:
+#         if event == "on_message":
+#             f.write(f'Unhandled error: {args[0]}\n')
 
 bot.run(TOKEN)

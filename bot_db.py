@@ -4,13 +4,7 @@ def write_json(data,filename='storage.json'):
     with open(filename,'w') as f:
         json.dump(data,f,indent=4)
 
-def create_user():
-    template_user = {
-        "name": "NameHere",
-        "id": 1234,
-        "points": 100
-    }
-
+def create_user(template_user={"name": "NameHere","id": 1234,"points": 100}):
     with open("storage.json") as f:
         data = json.load(f)
         temp = data['users']
@@ -62,4 +56,3 @@ def change_points(userid,value,way):
             break
     write_json(data)
     return True
-
