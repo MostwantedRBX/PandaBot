@@ -5,6 +5,7 @@ import discord
 import youtube_dl
 import asyncio
 from discord.ext import commands
+from discord import FFmpegPCMAudio as ff
 from dotenv import load_dotenv
 
 #custom imports
@@ -15,7 +16,7 @@ from plugins import lotto
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-bot = commands.Bot(command_prefix='p!')
+bot = commands.Bot(command_prefix='p!',help_command=None)
 
 @bot.event
 async def on_ready():
@@ -38,13 +39,27 @@ async def on_member_join(member):
     )
     print("Panda Bot sent a user a DM")
 
+@bot.command(name="help")
+async def help(ctx):
+    embed = discord.Embed(title="Panda Bot Help",description="Panda Bot for Dummies.")
+    #embed.color = "red"
+    embed.add_field(name="p!Help", value="Shows this table!")
+    embed.add_field(name="p!echo", value="I'll repeat whatever you say. Don't make it dirty please. D:")
+    embed.add_field(name="p!howispanda",value="Ask how I am. :)")
+    embed.add_field(name="p!pokemon", value="I'll respond with a random quote or funny line from Pokemon!")
+    embed.add_field(name="p!roll", value="One dice roll coming up! Specify the sides like: 'p!roll 6'")
+    embed2 = discord.Embed(title="Panda Gambling Help",description="Don't blow all of your money!")
+    embed2.add_field(name="p!gamble highlow 'amount to bet' 'high or low'",value="")
+    await ctx.send(content=None,embed=embed)
+    await ctx.send(content=None,embed=embed2)
+
 @bot.command(name="echo",help="I'll repeat whatever you say, but don't make it dirty please. D:")
 async def echo(ctx,str):
     if str:
         await ctx.send(str)
     
 @bot.command(name="roll",help="I'll a die for you, put the sides after the command like: !roll 6")
-async def rolld6(ctx, sides: int):
+async def rolld(ctx, sides: int):
     await ctx.send(random.choice(range(1,sides)))
 
 @bot.command(name="howispanda",help="I wonder how he is doing...")
@@ -103,10 +118,30 @@ async def join(ctx):
     if ctx.author.voice:
         voiceChannel = ctx.message.author.voice.channel
         print(voiceChannel)
-        voice = discord.utils.get(bot.voice_clients,guild=ctx.guild)
-        await voiceChannel.connect()
+        #voice = discord.utils.get(bot.voice_clients,guild=ctx.guild)
+        voice = await voiceChannel.connect()
+        source = ff('KillingTime.m4a')
+        audio = voice.play(source)
         return
     await ctx.send(f'You are not in a voice channel, {ctx.author.name}. I do not know you well enough to go to your house, yet... :eyes:')
+    
+@bot.command(name="pause")
+async def pause(ctx):
+    voice = discord.utils.get(bot.voice_clients,guild=ctx.guild)
+    if voice.is_playing():
+        voice.pause()
+        await ctx.guild.me.edit(nick='Panda Bot(Paused)')
+        await ctx.send(f'Audio is resumed in channel {ctx.message.author.voice.channel.name}. Resume with "p!resume"' )
+        return
+    await ctx.send(f'There is no audio playing, invite me to a channel first. :bamboo:')
+
+@bot.command(name='resume')
+async def resume(ctx):
+    voice = discord.utils.get(bot.voice_clients,guild=ctx.guild)
+    if voice.is_paused():
+        voice.resume()
+        return
+    await ctx.send(f'The sound is either already paused, or there is nothing playing.')
     
 
 @bot.command(name="leave")
